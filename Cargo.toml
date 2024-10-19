@@ -1,15 +1,15 @@
 [package]
-name = "pio-uart"
-version = "0.3.0"
-edition = "2021"
-description = "A software UART implementation for the RP2040 using the PIO feature."
+name = "pio-uart-9bit"
+version = "0.0.1"
+edition = "2024"
+description = "Pio-Uart with support for 9 bit serial data"
 license = "BSD-3-Clause"
-repository = "https://github.com/Sympatron/pio-uart"
+repository = "https://github.com/davidmpye/pio-uart-9bit"
 documentation = "https://docs.rs/pio-uart"
 readme = "README.md"
 keywords = ["uart", "pio", "rp2040", "embedded"]
 categories = ["embedded", "no-std"]
-authors = ["Karsten Große"]
+authors = ["Karsten Große", "David Pye"]
 
 [dependencies]
 cortex-m = "0.7.7"
