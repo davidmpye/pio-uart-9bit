@@ -377,14 +377,26 @@ impl<PinID: PinId, PIO: PIOExt, SM: StateMachineIndex> PioUartRx<PinID, PIO, SM,
     /// `Err(())`: If an error occurs.
     pub fn read_raw(&mut self, mut buf: &mut [u8]) -> Result<usize, ()> {
         let buf_len = buf.len();
-        while let Some(b) = self.rx.read() {
-            buf[0] = (b >> 24) as u8;
-            buf = &mut buf[1..];
-            if buf.len() == 0 {
-                break;
+        //Because of the 9 bit modification, bytes will always arrive in multiples of 2
+        //Eg 1x 9-bit type received will be read here as 2x bytes.  The first will contain the extra bit in the 0x01 position,
+    	//while the second will contain bits 7-0.
+    	if buf_len < 2 {
+    	    return Err(());
+    	}
+
+        'outer loop {
+            while let Some(b) = self.rx.read() {
+                buf[0] = (b >> 24) as u8;
+                buf = &mut buf[1..];
+                if buf.len() == 0 {
+                    break 'outer;
+                }
+            }
+            if (buf_len - buf.len()) %2 == 0 {
+                break 'outer;
             }
         }
-        Ok(buf_len - buf.len())
+    	Ok(buf_len - buf.len())
     }
     /// Stops the UART, transitioning it back to the `Stopped` state.
     ///
@@ -410,11 +422,12 @@ impl<PinID: PinId, PIO: PIOExt, SM: StateMachineIndex> PioUartTx<PinID, PIO, SM,
     /// `Ok(())`: On success.
     /// `Err(())`: If an error occurs.
     pub fn write_raw(&mut self, buf: &[u8]) -> Result<(), ()> {
-        for b in buf {
-            while self.tx.is_full() {
-                core::hint::spin_loop()
-            }
-            self.tx.write(*b as u32);
+    // To provide 9 bit support, we expect to receive writes in multiples of 2      
+       for n in 0..buf.len()/2 {
+          while self.tx.is_full() {
+            core::hint::spin_loop()
+          }
+    	  self.tx.write(u16::from_le_bytes([ buf[(n*2) +1], buf[n*2]&0x01 ]  ) as u32);
         }
         Ok(())
     }
