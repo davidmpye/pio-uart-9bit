@@ -6,6 +6,8 @@
 
 ; 8n1 UART modified to handle 9n1 - will push two bytes, where the first byte contains the 9th bit in the 0x01 position.
 ; Modified by David Pye davidmpye@gmail.com
+.program uart_rx
+
 
 start:
     wait 0 pin 0        ; Stall until start bit is asserted
