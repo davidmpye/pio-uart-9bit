@@ -384,7 +384,7 @@ impl<PinID: PinId, PIO: PIOExt, SM: StateMachineIndex> PioUartRx<PinID, PIO, SM,
     	    return Err(());
     	}
 
-        'outer loop {
+        'outer: loop {
             while let Some(b) = self.rx.read() {
                 buf[0] = (b >> 24) as u8;
                 buf = &mut buf[1..];
